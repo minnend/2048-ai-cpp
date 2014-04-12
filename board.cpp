@@ -198,15 +198,11 @@ int Board::NumAvailableTiles() const
 
 int Board::GetAvailableTiles(byte* list) const
 {
+  uint64_t b = *(uint64_t*)board;
   int n = 0;
-  int ix = 0;
-  for(int y=0; y<Height; ++y){
-    ushort row = board[y];
-    if ((row & 0xF000) == 0) list[n++] = ix;
-    if ((row & 0x0F00) == 0) list[n++] = ix + 1;
-    if ((row & 0x00F0) == 0) list[n++] = ix + 2;
-    if ((row & 0x000F) == 0) list[n++] = ix + 3;
-    ix += 4;
+  for(int i=0; i<16; ++i){
+    if ((b & 0xF) == 0) list[n++] = i;
+    b >>= 4;
   }
 
   return n;

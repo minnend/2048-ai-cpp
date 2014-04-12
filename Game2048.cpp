@@ -220,8 +220,8 @@ int main(int argc, char* argv[])
   srand_sse(1234); // TODO
 
   Test();
-  TimeMoveSpeed();
-  //PlayGame();
+  //TimeMoveSpeed();
+  PlayGame();
 
   //printf("Press any key to continue...");
   //getchar();
