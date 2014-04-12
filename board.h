@@ -25,7 +25,7 @@ public:
 
   void SetRow(int iRow, int a, int b, int c, int d);
   void SetCol(int iCol, int a, int b, int c, int d);
-  void SetCol(ushort col, int iCol);
+  void SetCol(int iCol, ushort v);
   void SetCell(int ix, ushort v);
   void SetCell(int x, int y, ushort v);
 
@@ -55,6 +55,9 @@ public:
   bool SlideRight(int iRow);
   bool SlideDown(int iCol);
   bool SlideLeft(int iRow);
+
+  void RotateCW();
+  void ReflectVert();
 
   byte MaxTile() const;
   int Score() const { return score; }

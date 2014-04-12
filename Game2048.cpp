@@ -73,6 +73,22 @@ void Test()
     assert(b1.GetReverseCol(i) == 0x1234);
   }
 
+  // Test Rotate
+  b1.Reset();
+  b1.SetRow(0, 1, 2, 3, 4);
+  b1.RotateCW();
+  b2.Reset();
+  b2.SetCol(3, 1, 2, 3, 4);
+  assert(b1 == b2);
+
+  // Test Reflect Vertical
+  b1.Reset();
+  b1.SetRow(0, 1, 2, 3, 4);
+  b1.ReflectVert();
+  b2.Reset();
+  b2.SetRow(3, 1, 2, 3, 4);
+  assert(b1 == b2);
+
   // Test SlideUp
   b1.Reset();
   b1.SetCol(0, 2, 2, 1, 1);
@@ -223,7 +239,7 @@ int main(int argc, char* argv[])
 
   Test();
   //TimeMoveSpeed();
-  PlayGame();
+  //PlayGame();
 
   //printf("Press any key to continue...");
   //getchar();

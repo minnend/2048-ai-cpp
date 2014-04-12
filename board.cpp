@@ -137,7 +137,7 @@ ushort Board::GetReverseCol(int iCol) const
     | (((board[0] >> shift)  & 0x000F) << 12);
 }
 
-void Board::SetCol(ushort col, int iCol)
+void Board::SetCol(int iCol, ushort col)
 {
   assert(iCol>=0 && iCol<Width);
   const int nshift = iCol*4;
@@ -344,7 +344,7 @@ bool Board::SlideUp(int iCol)
   ushort from = GetCol(iCol);
   ushort to = Board::moveLeftLUT[from];
   if (from == to) return false;
-  SetCol(to, iCol);
+  SetCol(iCol, to);
   score += Board::scoreLeftLUT[from];
   return true;
 }
@@ -364,7 +364,7 @@ bool Board::SlideDown(int iCol)
   ushort from = GetReverseCol(iCol);
   ushort to = Board::moveLeftLUT[from];
   if (from == to) return false;
-  SetCol(Reverse(to), iCol);
+  SetCol(iCol, Reverse(to));
   score += Board::scoreLeftLUT[from];
   return true;
 }
@@ -379,10 +379,29 @@ bool Board::SlideLeft(int iRow)
   return true;
 }
 
-bool Board::operator==(const Board& b) const
+void Board::RotateCW()
 {
-  if (this == &b) return true;
-  for (int y = 0; y < Height; ++y)
-    if (board[y] != b.board[y]) return false;
-  return true;
+  ushort b[Height];
+  ::memcpy(b, board, Height*sizeof(short));
+  for(int i=0; i<Height; ++i)
+    SetCol(3-i, b[i]);
+}
+
+void Board::ReflectVert()
+{
+  ushort t = board[0];
+  board[0] = board[3];
+  board[3] = t;
+
+  t = board[1];
+  board[1] = board[2];
+  board[2] = t;
+}
+
+bool Board::operator==(const Board& that) const
+{
+  if (this == &that) return true;
+  uint64_t a = *(uint64_t*)board;
+  uint64_t b = *(uint64_t*)that.board;
+  return a == b;
 }
