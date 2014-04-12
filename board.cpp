@@ -20,43 +20,9 @@ ushort Reverse(ushort r)
   return (r >> 12) | ((r >> 4) & 0x00F0) | ((r << 4) & 0x0F00) | (r << 12);
 }
 
-ushort GetCol(int iCol, const ushort* board)
-{
-  const int shift = 12 - iCol*4;
-  return ((board[0] >> shift) << 12)
-    | (((board[1] >> shift) & 0x000F) << 8)
-    | (((board[2] >> shift) & 0x000F) << 4)
-    | ((board[3] >> shift)  & 0x000F);
-}
-
-ushort GetReverseCol(int iCol, const ushort* board)
-{
-  const int shift = 12 - iCol*4;
-  return ((board[3] >> shift) << 12)
-    | (((board[2] >> shift) & 0x000F) << 8)
-    | (((board[1] >> shift) & 0x000F) << 4)
-    | ((board[0] >> shift)  & 0x000F);
-}
-
-void SetCol(ushort col, int iCol, ushort* board)
-{
-  assert(iCol>=0 && iCol<Width);  
-  const ushort ColMask = (0xF000 >> (iCol * 4));
-  const ushort BoardMask = ~ColMask;  
-  const ushort a = col >> 12;
-  const ushort b = (col >> 8) & 0x000F;
-  const ushort c = (col >> 4) & 0x000F;
-  const ushort d = col & 0x000F;
-  const int nshift = 12 - iCol*4;
-  board[0] = (board[0] & BoardMask) | (a << nshift);
-  board[1] = (board[1] & BoardMask) | (b << nshift);
-  board[2] = (board[2] & BoardMask) | (c << nshift);
-  board[3] = (board[3] & BoardMask) | (d << nshift);  
-}
-
 ushort RowVal(ushort row, int x)
 {
-  return (row >> (12-x*4)) & 0xF;
+  return (row >> (x*4)) & 0xF;
 }
 
 ////////////////////////////////////////////////////////////
@@ -77,7 +43,7 @@ void Board::Init()
     for(int ib=0; ib<=MaxTileVal; ++ib){
       for(int ic=0; ic<=MaxTileVal; ++ic){
         for(int id=0; id<=MaxTileVal; ++id){
-            const ushort from = (ia << 12) | (ib << 8) | (ic << 4) | id;
+            const ushort from = ia | (ib << 4) | (ic << 8) | (id << 12);
             ushort to = from;
             int score = 0;
             Board::SlideLeftSlow(&to, &score);            
@@ -95,17 +61,7 @@ bool Board::SlideLeftSlow(ushort* row, int* score)
   for(int i=0; i<4; ++i)
     b[i] = RowVal(*row, i);
   if (!SlideLeftSlow(b, score)) return false;
-  *row = (b[0] << 12) | (b[1] << 8) | (b[2] << 4) | b[3];
-  return true;
-}
-
-bool Board::SlideRightSlow(ushort* row, int* score)
-{
-  byte b[4];
-  for(int i=0; i<4; ++i)
-    b[i] = RowVal(*row, 3 - i); // reverse order
-  if (!SlideLeftSlow(b, score)) return false;
-  *row = (b[3] << 12) | (b[2] << 8) | (b[1] << 4) | b[0];
+  *row = b[0] | (b[1] << 4) | (b[2] << 8) | (b[3] << 12);
   return true;
 }
 
@@ -148,19 +104,53 @@ Board::Board()
 void Board::SetRow(int iRow, int a, int b, int c, int d)
 {
   assert(iRow>=0 && iRow<Height);
-  board[iRow] = (a << 12) | (b << 8) | (c << 4) | d;
+  board[iRow] = (d << 12) | (c << 8) | (b << 4) | a;
 }
 
 void Board::SetCol(int iCol, int a, int b, int c, int d)
 {
   assert(iCol>=0 && iCol<Width);
-  const ushort ColMask = (0xF000 >> (iCol * 4));
+  const ushort ColMask = (0x000F << (iCol * 4));
   const int mask = ~ColMask;
-  const int nshift = 12 - iCol*4;
+  const int nshift = iCol*4;
   board[0] = (board[0] & mask) | (a << nshift);
   board[1] = (board[1] & mask) | (b << nshift);
   board[2] = (board[2] & mask) | (c << nshift);
   board[3] = (board[3] & mask) | (d << nshift);
+}
+
+ushort Board::GetCol(int iCol) const
+{
+  const int shift = iCol*4;
+  return ((board[0] >> shift) & 0x000F)
+    | (((board[1] >> shift) & 0x000F) << 4)
+    | (((board[2] >> shift) & 0x000F) << 8)
+    | (((board[3] >> shift)  & 0x000F) << 12);
+}
+
+ushort Board::GetReverseCol(int iCol) const
+{
+  const int shift = iCol*4;
+  return ((board[3] >> shift) & 0x000F)
+    | (((board[2] >> shift) & 0x000F) << 4)
+    | (((board[1] >> shift) & 0x000F) << 8)
+    | (((board[0] >> shift)  & 0x000F) << 12);
+}
+
+void Board::SetCol(ushort col, int iCol)
+{
+  assert(iCol>=0 && iCol<Width);
+  const int nshift = iCol*4;
+  const ushort ColMask = (0x000F << nshift);
+  const ushort BoardMask = ~ColMask;  
+  const ushort a = col & 0x000F;
+  const ushort b = (col >> 4) & 0x000F;
+  const ushort c = (col >> 8) & 0x000F;
+  const ushort d = col >> 12;
+  board[0] = (board[0] & BoardMask) | (a << nshift);
+  board[1] = (board[1] & BoardMask) | (b << nshift);
+  board[2] = (board[2] & BoardMask) | (c << nshift);
+  board[3] = (board[3] & BoardMask) | (d << nshift);  
 }
 
 void Board::SetCell(int ix, ushort v)
@@ -173,11 +163,11 @@ void Board::SetCell(int x, int y, ushort v)
 {
   assert(x>=0 && x<4);
   assert(y>=0 && y<4);
-  assert(v << 16);
+  assert(v < 16);
 
-  const ushort ColMask = (0xF000 >> (x * 4));
+  const int nshift = x*4;
+  const ushort ColMask = (0x000F << nshift);
   const ushort BoardMask = ~ColMask;
-  const int nshift = 12 - x*4;
   board[y] = (board[y] & BoardMask) | (v << nshift);
 }
 
@@ -262,16 +252,12 @@ void Board::Print() const
 {
   for(int y=0; y<Height; ++y){
     ushort b = board[y];
-    printf("%04x: ", b);
-    byte row[4];
+    printf("%04x: ", Reverse(b));
     for(int x=0; x<Width; ++x){
-      row[(Width-1)-x] = b & 0xF;
+      int val = b & 0xF;
+      if (val == 0) printf("     .");
+      else printf("% 6d", 1 << val);
       b >>= 4;
-    }
-    for(int x=0; x<Width; ++x){
-      int val = row[x];
-      if (val == 0) printf("    .");
-      else printf("% 5d", 1 << val);
     }
     printf("\n");
   }
@@ -302,7 +288,7 @@ bool Board::Slide(Direction dir)
 bool Board::CanSlideUp() const
 {  
   for (int x = 0; x < Width; ++x) {    
-    ushort v = GetCol(x, board);
+    ushort v = GetCol(x);
     if (moveLeftLUT[v] != v) return true;
   }
   return false;
@@ -320,7 +306,7 @@ bool Board::CanSlideRight() const
 bool Board::CanSlideDown() const
 {  
   for (int x = 0; x < Width; ++x) {    
-    ushort v = GetReverseCol(x, board);
+    ushort v = GetReverseCol(x);
     if (moveLeftLUT[v] != v) return true;
   }
   return false;
@@ -357,10 +343,10 @@ bool Board::SlideLeft()
 
 bool Board::SlideUp(int iCol)
 {  
-  ushort from = GetCol(iCol, board);
+  ushort from = GetCol(iCol);
   ushort to = Board::moveLeftLUT[from];
   if (from == to) return false;
-  ::SetCol(to, iCol, board);
+  SetCol(to, iCol);
   score += Board::scoreLeftLUT[from];
   return true;
 }
@@ -377,10 +363,10 @@ bool Board::SlideRight(int iRow)
 
 bool Board::SlideDown(int iCol)
 {  
-  ushort from = GetReverseCol(iCol, board);
+  ushort from = GetReverseCol(iCol);
   ushort to = Board::moveLeftLUT[from];
   if (from == to) return false;
-  ::SetCol(Reverse(to), iCol, board);
+  SetCol(Reverse(to), iCol);
   score += Board::scoreLeftLUT[from];
   return true;
 }

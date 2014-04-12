@@ -11,9 +11,6 @@ typedef unsigned char byte;
 typedef unsigned short ushort;
 
 ushort Reverse(ushort r);
-ushort GetCol(int iCol, const ushort* board);
-ushort GetReverseCol(int iCol, const ushort* board);
-void SetCol(ushort col, int iCol, ushort* board);
 ushort RowVal(ushort row, int x);
 
 class Board
@@ -28,9 +25,12 @@ public:
 
   void SetRow(int iRow, int a, int b, int c, int d);
   void SetCol(int iCol, int a, int b, int c, int d);
-
+  void SetCol(ushort col, int iCol);
   void SetCell(int ix, ushort v);
   void SetCell(int x, int y, ushort v);
+
+  ushort GetCol(int iCol) const;
+  ushort GetReverseCol(int iCol) const;
 
   bool HasOpenTiles() const;
   int NumAvailableTiles() const;
@@ -59,7 +59,6 @@ public:
   int Score() const { return score; }
 
   static bool SlideLeftSlow(ushort* row, int* score);
-  static bool SlideRightSlow(ushort* row, int* score);
   static bool SlideLeftSlow(byte* p, int* score);
 
   bool operator==(const Board& other) const;
