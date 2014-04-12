@@ -205,7 +205,9 @@ void PlayGame()
     printf("Move: %s\n", DirName[move]);
     board.Slide(move);
     board.Print();
+    //printf("Score: %d\n", board.Score());
     board.AddRandomTile();
+    if (board.IsDead()) break;
   }
   clock_t stop = clock();
   printf("Final Board:\n");
@@ -220,8 +222,8 @@ int main(int argc, char* argv[])
   srand_sse(1234); // TODO
 
   Test();
-  TimeMoveSpeed();
-  //PlayGame();
+  //TimeMoveSpeed();
+  PlayGame();
 
   //printf("Press any key to continue...");
   //getchar();

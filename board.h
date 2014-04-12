@@ -37,6 +37,7 @@ public:
   int GetAvailableTiles(byte* list) const;
   bool AddRandomTile();
 
+  bool IsDead() const;
   bool CanSlide(Direction dir) const;
   bool Slide(Direction dir);
 

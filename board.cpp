@@ -255,6 +255,12 @@ void Board::Print() const
   }
 }
 
+bool Board::IsDead() const
+{
+  if (NumAvailableTiles() > 0) return false;
+  return !CanSlideLeft() && !CanSlideRight() && !CanSlideUp() && !CanSlideDown();
+}
+
 bool Board::CanSlide(Direction dir) const
 {
   switch(dir){
