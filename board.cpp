@@ -173,25 +173,21 @@ void Board::SetCell(int x, int y, ushort v)
 
 bool Board::HasOpenTiles() const
 {  
-  for(int y=0; y<Height; ++y){
-    int row = board[y];
-    for(int x=0; x<Width; ++x){
-      if ((row & 0x000F) == 0) return true;
-      row >>= 4;
-    }
+  uint64_t b = *(uint64_t*)board;
+  for(int i=0; i<16; ++i){
+    if ((b & 0xF) == 0) return true;
+    b >>= 4;
   }
   return false;
 }
 
 int Board::NumAvailableTiles() const
 {
+  uint64_t b = *(uint64_t*)board;
   int n = 0;
-  for(int y=0; y<Height; ++y){
-    int row = board[y];
-    for(int x=0; x<Width; ++x){
-      if ((row & 0x000F) == 0) ++n;
-      row >>= 4;
-    }
+  for(int i=0; i<16; ++i){
+    if ((b & 0xF) == 0) ++n;
+    b >>= 4;
   }
   return n;
 }
