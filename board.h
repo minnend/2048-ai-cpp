@@ -3,7 +3,7 @@
 
 #include <vector>
 
-enum Direction { None=-1, Up=0, Right, Down, Left, NumMoves };
+enum Direction { None=-1, Up=0, Right, Down, Left, NumDirections };
 
 extern std::vector<const char*> DirName;
 
@@ -35,6 +35,7 @@ public:
   bool HasOpenTiles() const;
   int NumAvailableTiles() const;
   int GetAvailableTiles(byte* list) const;
+  int GetLegalMoves(Direction* moves) const;
   bool AddRandomTile();
 
   bool IsDead() const;

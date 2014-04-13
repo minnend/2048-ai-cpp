@@ -216,6 +216,14 @@ byte Board::MaxTile() const
   return vmax;
 }
 
+int Board::GetLegalMoves(Direction* moves) const
+{
+  int n = 0;
+  for(int i=0; i<NumDirections; ++i)
+    if (CanSlide((Direction)i)) moves[n++] = (Direction)i;
+  return n;
+}
+
 bool Board::AddRandomTile()
 {
   byte list[16];

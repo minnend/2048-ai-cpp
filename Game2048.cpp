@@ -5,6 +5,7 @@
 
 #include "board.h"
 #include "rng.h"
+#include "random_player.h"
 
 static double CPMS = CLOCKS_PER_SEC / 1000.0;
 
@@ -202,12 +203,7 @@ Board NewGame()
   return b;
 }
 
-Direction FindBestMove(const Board& board)
-{
-  return (Direction)(rand_uint() & 3);
-}
-
-void PlayGame()
+void PlayGame(Player* player)
 {
   Board board = NewGame();
   clock_t start = clock();
@@ -216,7 +212,7 @@ void PlayGame()
     printf("---------------------------------------\n");
     printf("Board:\n");
     board.Print();
-    Direction move = FindBestMove(board);
+    Direction move = player->FindBestMove(board);
     if (move == None) break;
     printf("Move: %s\n", DirName[move]);
     board.Slide(move);
@@ -237,9 +233,10 @@ int main(int argc, char* argv[])
   Board::Init();
   srand_sse(1234); // TODO
 
+  std::unique_ptr<Player> player(new RandomPlayer());
   Test();
   //TimeMoveSpeed();
-  //PlayGame();
+  PlayGame(player.get());
 
   //printf("Press any key to continue...");
   //getchar();
