@@ -6,6 +6,7 @@
 #include "board.h"
 #include "rng.h"
 #include "random_player.h"
+#include "search_player.h"
 
 static double CPMS = CLOCKS_PER_SEC / 1000.0;
 
@@ -233,7 +234,7 @@ int main(int argc, char* argv[])
   Board::Init();
   srand_sse(1234); // TODO
 
-  std::unique_ptr<Player> player(new RandomPlayer());
+  std::unique_ptr<Player> player(new SearchPlayer());
   Test();
   //TimeMoveSpeed();
   PlayGame(player.get());
