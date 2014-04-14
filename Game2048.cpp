@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
+#include <unordered_set>
 
 #include "board.h"
 #include "rng.h"
@@ -90,6 +91,19 @@ void Test()
   b2.Reset();
   b2.SetRow(3, 1, 2, 3, 4);
   assert(b1 == b2);
+
+  // Test hashing
+  std::unordered_set<Board> set;
+  b1.Reset();
+  set.insert(b1);
+  assert(set.size() == 1);
+  assert(set.find(b1) != set.end());
+  b1.Reset();
+  b1.SetRow(0,1,2,3,4);
+  assert(set.find(b1) == set.end());
+  set.insert(b1);
+  assert(set.find(b1) != set.end());
+  assert(set.size() == 2);
 
   // Test SlideUp
   b1.Reset();
@@ -208,22 +222,25 @@ void PlayGame(Player* player)
 {
   Board board = NewGame();
   clock_t start = clock();
-  //while (true) {
-  for (int i = 0; i < 10; ++i) {
+  int nMoves = 0;
+  while (true) {
+  //for (int i = 0; i < 10; ++i) {
     printf("---------------------------------------\n");
     printf("Board:\n");
     board.Print();
     Direction move = player->FindBestMove(board);
     if (move == None) break;
     printf("Move: %s\n", DirName[move]);
+    assert(board.CanSlide(move));
     board.Slide(move);
+    ++nMoves;
     board.Print();
-    //printf("Score: %d\n", board.Score());
+    printf("Score: %d\n", board.Score());
     board.AddRandomTile();
     if (board.IsDead()) break;
   }
   clock_t stop = clock();
-  printf("Final Board:\n");
+  printf("Final Board (%d moves):\n", nMoves);
   board.Print();
   printf("%d  %d\n", 1 << board.MaxTile(), board.Score());
   printf("Time: %.1fms\n", (stop-start)/CPMS);

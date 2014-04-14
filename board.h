@@ -77,4 +77,13 @@ private:
   static int scoreLeftLUT[];    
 };
 
+namespace std {
+  template <>
+  struct hash<Board>{
+    size_t operator()(const Board &b) const {
+      return *(size_t*)b.board;
+    }
+  };
+}
+
 #endif
