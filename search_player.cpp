@@ -27,6 +27,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 	float bestScore = 0.0f;
 	for (std::unordered_map<int,MoveNode>::iterator x = root.kids.begin();
 		x != root.kids.end(); ++x){
+		printf("%s: %.3f\n", DirName[x->first], x->second.score);
 		if (x->second.score > bestScore){
 			bestDir = (Direction)x->first;
 			bestScore = x->second.score;
@@ -38,32 +39,40 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 
 void SearchPlayer::AccumInfo(MoveNode& node) const
 {
+	if (node.processed) return;
 	if (node.kids.empty()){
 		node.score = Eval(node.board);
 		return;
 	}
 
-	// TODO
+	node.score = 0.0f;
+	float wsum = 0.0f;
+	for(std::unordered_map<Board,TileNodeWrapper>::iterator x = node.kids.begin();
+		x != node.kids.end(); ++x) {
+		AccumInfo(x->second.node);
+		wsum += x->second.prob;
+		node.score += x->second.prob * x->second.node.score;
+	}
+	node.score /= wsum;
+	node.processed = true;
 }
 
 void SearchPlayer::AccumInfo(TileNode& node) const
 {
+	if (node.processed) return;
 	if (node.kids.empty()){
 		node.score = Eval(node.board);
 		return;
-	}
-
-	for(std::unordered_map<int,MoveNode>::iterator x = node.kids.begin();
-		x != node.kids.end(); ++x) {
-		AccumInfo(x->second);
 	}
 
 	node.score = -std::numeric_limits<float>::infinity();
 	for(std::unordered_map<int,MoveNode>::iterator x = node.kids.begin();
 		x != node.kids.end(); ++x) {
+		AccumInfo(x->second);
 		if (x->second.score > node.score)
 			node.score = x->second.score;
 	}
+	node.processed = true;
 }
 
 float SearchPlayer::Eval(const Board& board) const

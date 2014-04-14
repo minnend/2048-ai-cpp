@@ -13,19 +13,22 @@ class TileNodeWrapper;
 class SearchNode
 {
 public:
-	SearchNode() : score(0.0f) {}
+	SearchNode() : score(0.0f), processed(false) {}
 	Board board;
 	float score;
+	bool processed;
 };
 
-// Board state that results from a move
+// Board state that results from a move.
+// The next step is to add a random tile.
 class MoveNode : public SearchNode
 {
 public:
 	std::unordered_map<Board, TileNodeWrapper> kids;
 };
 
-// Board state that results from adding a random tile
+// Board state that results from adding a random tile.
+// The next step is to make a move.
 class TileNode : public SearchNode
 {
 public:
@@ -36,7 +39,7 @@ class TileNodeWrapper
 {
 public:
 	TileNodeWrapper(float prob, TileNode &node);
-	
+
 	TileNode node;
 	float prob;
 };
