@@ -247,6 +247,51 @@ void Board::Reset()
   ::memset(board, 0, Height * sizeof(ushort));
 }
 
+int Board::CanonicalScore() const
+{
+  int score = 0;
+  uint64_t b = *(uint64_t*)board;
+  for(int i=0; i<16; ++i){
+    score += (i+1) * (b & 0xF);
+    b >>= 4;
+  }
+  return score;
+}
+
+Board Board::GetCanonical() const
+{
+  Board bestBoard = *this;
+  int bestScore = bestBoard.CanonicalScore();
+
+  Board b = *this;
+  b.ReflectVert();
+  int score = b.CanonicalScore();
+  if (score > bestScore) {
+    bestScore = score;
+    bestBoard = b;
+  }
+
+  b = *this;
+  for (int i=0; i<3; ++i) {
+    b.RotateCW();
+    int score = b.CanonicalScore();
+    if (score > bestScore) {
+      bestScore = score;
+      bestBoard = b;
+    }
+
+    Board b2 = b;
+    b2.ReflectVert();
+    score = b2.CanonicalScore();
+    if (score > bestScore) {
+      bestScore = score;
+      bestBoard = b2;
+    }
+  }
+
+  return bestBoard;
+}
+
 void Board::Print() const
 {
   for(int y=0; y<Height; ++y){

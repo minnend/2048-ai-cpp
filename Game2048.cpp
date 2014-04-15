@@ -105,6 +105,16 @@ void Test()
   assert(set.find(b1) != set.end());
   assert(set.size() == 2);
 
+  // Test canonicalization
+  b1.Reset();
+  b1.SetRow(0,1,2,3,4);
+  b2.Reset();
+  b2.SetRow(3,1,2,3,4);
+  assert(b1.GetCanonical() == b2.GetCanonical());
+  b2.Reset();
+  b2.SetCol(0,4,3,2,1);
+  assert(b1.GetCanonical() == b2.GetCanonical());
+
   // Test SlideUp
   b1.Reset();
   b1.SetCol(0, 2, 2, 1, 1);

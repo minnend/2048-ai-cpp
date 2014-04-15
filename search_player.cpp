@@ -23,7 +23,7 @@ bool TileNode::IsDupBoard(const Board& b) const
 {
 	for(int i=0; i<NumDirections; ++i){
 		if (kids[i] == nullptr) continue;
-		if (b == kids[i]->board) return true;
+		if (b == kids[i]->board.GetCanonical()) return true;
 	}
 	return false;
 }
@@ -50,7 +50,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 
 	Direction dirs[4];
 	byte avail[16];
-	const int MaxMoveDepth = 3;
+	const int MaxMoveDepth = 4;
 	for(int iMove=0; iMove < MaxMoveDepth; ++iMove) {
 		printf("Move: %d  TileNodes: %lu\n", iMove+1, tileNodes.size());
 		moveNodes.clear();
@@ -61,14 +61,15 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 				Direction dir = dirs[i];
 				Board b = node->board;
 				b.Slide(dir);
-				if (node->IsDupBoard(b)) continue;
+				Board canonical = b.GetCanonical();
+				if (node->IsDupBoard(canonical)) continue;
 
-				MoveNodeMap::iterator it = moveNodes.find(b);
+				MoveNodeMap::iterator it = moveNodes.find(canonical);
 				if (it == moveNodes.end()) {
 					MoveNode *kid = new MoveNode;
 					kid->board = b;
 					node->kids[dir] = kid;
-					moveNodes.insert(std::make_pair<Board,MoveNode*>(b, kid));
+					moveNodes.insert(std::make_pair<Board,MoveNode*>(canonical, kid));
 				} else {
 					node->kids[dir] = it->second;
 				}
@@ -108,7 +109,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 	for(int i=0; i<NumDirections; ++i){
 		MoveNode* kid = root->kids[i];
 		if (kid == nullptr) continue;
-		printf("%s: %.3f\n", DirName[i], kid->score);
+		//printf("%s: %.3f\n", DirName[i], kid->score);
 		if (kid->score > bestScore){
 			bestDir = (Direction)i;
 			bestScore = kid->score;

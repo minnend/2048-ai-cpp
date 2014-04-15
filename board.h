@@ -60,6 +60,9 @@ public:
   void RotateCW();
   void ReflectVert();
 
+  int CanonicalScore() const;
+  Board GetCanonical() const;
+
   byte MaxTile() const;
   int Score() const { return score; }
 
