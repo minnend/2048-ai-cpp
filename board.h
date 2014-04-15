@@ -69,7 +69,6 @@ public:
   bool operator==(const Board& other) const;
 
   ushort board[4];
-  int hashCode;
   int score;
 
 private:

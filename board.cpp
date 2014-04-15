@@ -244,7 +244,6 @@ bool Board::AddRandomTile()
 void Board::Reset()
 {
   score = 0;
-  hashCode = 0;
   ::memset(board, 0, Height * sizeof(ushort));
 }
 
