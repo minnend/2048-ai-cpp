@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "search_player.h"
 
 MoveNodeMap MoveNode::boards;
@@ -62,14 +63,14 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 				b.Slide(dir);
 				if (node->IsDupBoard(b)) continue;
 
-				MoveNode *kid = new MoveNode;
-				kid->board = b;
-				node->kids[dir] = kid;
-				std::pair<MoveNodeMap::iterator,bool> ret = 
-					moveNodes.insert(std::make_pair<Board,MoveNode*>(kid->board, kid));
-				if (!ret.second) {
-					delete kid;
-					node->kids[dir] = ret.first->second;
+				MoveNodeMap::iterator it = moveNodes.find(b);
+				if (it == moveNodes.end()) {
+					MoveNode *kid = new MoveNode;
+					kid->board = b;
+					node->kids[dir] = kid;
+					moveNodes.insert(std::make_pair<Board,MoveNode*>(b, kid));
+				} else {
+					node->kids[dir] = it->second;
 				}
 			}
 		}
