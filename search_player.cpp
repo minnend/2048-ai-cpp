@@ -1,7 +1,7 @@
 #include "search_player.h"
 
-std::unordered_map<Board, MoveNode*> MoveNode::boards;
-std::unordered_map<Board, TileNodeWrapper> TileNode::boards;
+MoveNodeMap MoveNode::boards;
+TileNodeWrapperMap TileNode::boards;
 
 TileNodeWrapper::TileNodeWrapper(float p, TileNode *n) : node(n), prob(p) {}
 
@@ -29,14 +29,14 @@ bool TileNode::IsDupBoard(const Board& b) const
 
 void TileNode::DeleteBoards()
 {
-	for(TileNodeMap::iterator it = TileNode::boards.begin();
+	for(TileNodeWrapperMap::iterator it = TileNode::boards.begin();
 		it != TileNode::boards.end(); ++it) delete it->second.node;
 	TileNode::boards.clear();
 }
 
 Direction SearchPlayer::FindBestMove(const Board& board)
 {
-	std::vector<MoveNode*> moveNodes;
+	MoveNodeMap moveNodes;
 	std::vector<TileNode*> tileNodes;
 
 	std::vector< std::pair<int,float> > random_tile_info;
@@ -65,14 +65,19 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 				MoveNode *kid = new MoveNode;
 				kid->board = b;
 				node->kids[dir] = kid;
-				moveNodes.push_back(kid);
+				std::pair<MoveNodeMap::iterator,bool> ret = 
+					moveNodes.insert(std::make_pair<Board,MoveNode*>(kid->board, kid));
+				if (!ret.second) {
+					delete kid;
+					node->kids[dir] = ret.first->second;
+				}
 			}
 		}
 
 		printf("Move: %d  MoveNodes: %lu\n", iMove+1, moveNodes.size());
 		tileNodes.clear();
-		for(int iNode=0; iNode<moveNodes.size(); ++iNode) {
-			MoveNode* node = moveNodes[iNode];
+		for(MoveNodeMap::iterator it = moveNodes.begin(); it != moveNodes.end(); ++it) {
+			MoveNode* node = it->second;
 			int nAvail = node->board.GetAvailableTiles(avail);
 			random_tile_info[0].second = 0.9f / nAvail;
 			random_tile_info[1].second = 0.1f / nAvail;
@@ -80,7 +85,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 				for(int j=0; j<random_tile_info.size(); ++j){
 					Board b = node->board;
 					b.SetCell(avail[i], random_tile_info[j].first);
-					TileNodeMap::iterator it = node->kids.find(b);
+					TileNodeWrapperMap::iterator it = node->kids.find(b);
 					if (it == node->kids.end()) {
 						TileNode *kid = new TileNode;
 						kid->board = b;
@@ -116,7 +121,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 
 void SearchPlayer::AccumInfo(MoveNode *node) const
 {
-	if (node->processed) return;
+	if (node->accumed) return;
 	if (node->kids.empty()){
 		node->score = Eval(node->board);
 	} else {
@@ -130,12 +135,12 @@ void SearchPlayer::AccumInfo(MoveNode *node) const
 		}
 		node->score /= wsum;
 	}
-	node->processed = true;
+	node->accumed = true;
 }
 
 void SearchPlayer::AccumInfo(TileNode *node) const
 {
-	if (node->processed) return;
+	if (node->accumed) return;
 	
 	int nKids = 0;
 	node->score = -std::numeric_limits<float>::infinity();
@@ -150,7 +155,7 @@ void SearchPlayer::AccumInfo(TileNode *node) const
 	}
 	if (nKids == 0)
 		node->score = Eval(node->board);
-	node->processed = true;
+	node->accumed = true;
 }
 
 float SearchPlayer::Eval(const Board& board) const

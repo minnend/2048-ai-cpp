@@ -11,17 +11,18 @@ class TileNode;
 class TileNodeWrapper;
 
 typedef std::unordered_map<Board, MoveNode*> MoveNodeMap;
-typedef std::unordered_map<Board, TileNodeWrapper> TileNodeMap;
+typedef std::unordered_map<Board, TileNode*> TileNodeMap;
+typedef std::unordered_map<Board, TileNodeWrapper> TileNodeWrapperMap;
 
 class SearchNode
 {
 protected:
-	SearchNode() : score(0.0f), processed(false) {}
+	SearchNode() : score(0.0f), accumed(false) {}
 
 public:
 	Board board;
 	float score;
-	bool processed;
+	bool accumed;
 };
 
 // Board state that results from a move.
@@ -46,7 +47,7 @@ public:
 	MoveNode* kids[4];
 	
 	static void DeleteBoards();
-	static TileNodeMap boards;
+	static TileNodeWrapperMap boards;
 };
 
 class TileNodeWrapper
