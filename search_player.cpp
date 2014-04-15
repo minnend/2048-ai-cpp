@@ -1,16 +1,29 @@
 #include <assert.h>
 #include "search_player.h"
 
-MoveNodeMap MoveNode::boards;
-TileNodeWrapperMap TileNode::boards;
+std::vector<SearchNode*> SearchNode::all;
+
+void SearchNode::DeleteAllNodes()
+{
+	const int n = all.size();
+	for(int i=0; i<n; ++i) delete all[i];
+	all.clear();
+}
 
 TileNodeWrapper::TileNodeWrapper(float p, TileNode *n) : node(n), prob(p) {}
 
-void MoveNode::DeleteBoards()
+MoveNode* MoveNode::New()
 {
-	for(MoveNodeMap::iterator it = MoveNode::boards.begin();
-		it != MoveNode::boards.end(); ++it) delete it->second;
-	MoveNode::boards.clear();
+	MoveNode* node = new MoveNode;
+	all.push_back(node);
+	return node;
+}
+
+TileNode* TileNode::New()
+{
+	TileNode* node = new TileNode;
+	all.push_back(node);
+	return node;
 }
 
 TileNode::TileNode()
@@ -28,13 +41,6 @@ bool TileNode::IsDupBoard(const Board& b) const
 	return false;
 }
 
-void TileNode::DeleteBoards()
-{
-	for(TileNodeWrapperMap::iterator it = TileNode::boards.begin();
-		it != TileNode::boards.end(); ++it) delete it->second.node;
-	TileNode::boards.clear();
-}
-
 Direction SearchPlayer::FindBestMove(const Board& board)
 {
 	MoveNodeMap moveNodes;
@@ -44,7 +50,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 	random_tile_info.push_back(std::make_pair<int,float>(1,0.9f));
 	random_tile_info.push_back(std::make_pair<int,float>(2,0.1f));
 
-	TileNode *root = new TileNode;
+	TileNode *root = TileNode::New();
 	root->board = board;
 	tileNodes.push_back(root);
 
@@ -52,7 +58,6 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 	byte avail[16];
 	const int MaxMoveDepth = 4;
 	for(int iMove=0; iMove < MaxMoveDepth; ++iMove) {
-		printf("Move: %d  TileNodes: %lu\n", iMove+1, tileNodes.size());
 		moveNodes.clear();
 		for(int iNode=0; iNode<tileNodes.size(); ++iNode) {
 			TileNode* node = tileNodes[iNode];
@@ -66,7 +71,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 
 				MoveNodeMap::iterator it = moveNodes.find(canonical);
 				if (it == moveNodes.end()) {
-					MoveNode *kid = new MoveNode;
+					MoveNode *kid = MoveNode::New();
 					kid->board = b;
 					node->kids[dir] = kid;
 					moveNodes.insert(std::make_pair<Board,MoveNode*>(canonical, kid));
@@ -76,7 +81,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 			}
 		}
 
-		printf("Move: %d  MoveNodes: %lu\n", iMove+1, moveNodes.size());
+		//printf("Move: %d  MoveNodes: %lu\n", iMove+1, moveNodes.size());
 		tileNodes.clear();
 		for(MoveNodeMap::iterator it = moveNodes.begin(); it != moveNodes.end(); ++it) {
 			MoveNode* node = it->second;
@@ -89,7 +94,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 					b.SetCell(avail[i], random_tile_info[j].first);
 					TileNodeWrapperMap::iterator it = node->kids.find(b);
 					if (it == node->kids.end()) {
-						TileNode *kid = new TileNode;
+						TileNode *kid = TileNode::New();
 						kid->board = b;
 						node->kids.insert(std::make_pair<Board,TileNodeWrapper>(
 							b, TileNodeWrapper(random_tile_info[j].second, kid)));
@@ -100,6 +105,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 				}
 			}
 		}
+		//printf("Move: %d  TileNodes: %lu\n", iMove+1, tileNodes.size());
 	}
 
 	AccumInfo(root);
@@ -116,8 +122,9 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 		}
 	}
 
-	MoveNode::DeleteBoards();
-	TileNode::DeleteBoards();
+	printf("Nodes: %lu\n", SearchNode::all.size());
+	SearchNode::DeleteAllNodes();
+
 	return bestDir;
 }
 

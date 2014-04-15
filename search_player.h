@@ -20,9 +20,13 @@ protected:
 	SearchNode() : score(0.0f), accumed(false) {}
 
 public:
+	static void DeleteAllNodes();
+
 	Board board;
 	float score;
 	bool accumed;
+
+	static std::vector<SearchNode*> all;
 };
 
 // Board state that results from a move.
@@ -30,10 +34,8 @@ public:
 class MoveNode : public SearchNode
 {
 public:
+	static MoveNode* New();
 	std::unordered_map<Board, TileNodeWrapper> kids;
-
-	static void DeleteBoards();
-	static MoveNodeMap boards;
 };
 
 // Board state that results from adding a random tile.
@@ -41,13 +43,12 @@ public:
 class TileNode : public SearchNode
 {
 public:
+	static TileNode* New();
+
 	TileNode();
 	bool IsDupBoard(const Board& b) const;
 
 	MoveNode* kids[4];
-	
-	static void DeleteBoards();
-	static TileNodeWrapperMap boards;
 };
 
 class TileNodeWrapper
