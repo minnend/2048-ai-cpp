@@ -10,6 +10,9 @@ class MoveNode;
 class TileNode;
 class TileNodeWrapper;
 
+typedef std::unordered_map<Board, MoveNode*> MoveNodeMap;
+typedef std::unordered_map<Board, TileNodeWrapper> TileNodeMap;
+
 class SearchNode
 {
 protected:
@@ -27,6 +30,9 @@ class MoveNode : public SearchNode
 {
 public:
 	std::unordered_map<Board, TileNodeWrapper> kids;
+
+	static void DeleteBoards();
+	static MoveNodeMap boards;
 };
 
 // Board state that results from adding a random tile.
@@ -34,7 +40,13 @@ public:
 class TileNode : public SearchNode
 {
 public:
-	std::unordered_map<int, MoveNode*> kids;
+	TileNode();
+	bool IsDupBoard(const Board& b) const;
+
+	MoveNode* kids[4];
+	
+	static void DeleteBoards();
+	static TileNodeMap boards;
 };
 
 class TileNodeWrapper

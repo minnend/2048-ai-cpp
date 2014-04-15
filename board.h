@@ -3,7 +3,7 @@
 
 #include <vector>
 
-enum Direction { None=-1, Up=0, Right, Down, Left, NumDirections };
+enum Direction { None=-1, Left=0, Right, Up, Down, NumDirections };
 
 extern std::vector<const char*> DirName;
 
