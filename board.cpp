@@ -33,10 +33,10 @@ int Board::scoreLeftLUT[65536];
 
 void Board::Init()
 {
-  DirName.push_back("Up");
-  DirName.push_back("Right");
-  DirName.push_back("Down");
   DirName.push_back("Left");
+  DirName.push_back("Right");
+  DirName.push_back("Up");
+  DirName.push_back("Down");
 
   const int MaxTileVal = 15;
   for(int ia=0; ia<=MaxTileVal; ++ia){

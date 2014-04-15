@@ -223,8 +223,8 @@ void PlayGame(Player* player)
   Board board = NewGame();
   clock_t start = clock();
   int nMoves = 0;
-  //while (true) {
-  for (int i = 0; i < 10; ++i) {
+  while (true) {
+  //for (int i = 0; i < 10; ++i) {
     printf("---------------------------------------\n");
     printf("Board:\n");
     board.Print();
