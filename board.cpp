@@ -13,6 +13,13 @@
 ////////////////////////////////////////////////////////////
 // Global Declarations
 
+static const int CornerScoreTileValue[16] = {
+  64, 32, 16, 8,
+  32, 16,  8, 4,
+  16,  8,  4, 2,
+   8,  4,  2, 1
+};
+
 std::vector<const char*> DirName;
 
 ushort Reverse(ushort r)
@@ -247,6 +254,49 @@ void Board::Reset()
   ::memset(board, 0, Height * sizeof(ushort));
 }
 
+int Board::SmoothnessScore() const
+{
+  int score = 0;
+  for(int y=0; y<3; ++y){
+    ushort row = board[y];
+    ushort next = board[y+1];
+    for(int x=0; x<3; ++x){
+        int v = row & 0xF;
+        int w = (row >> 4) & 0xF;
+        score += abs(v - w);
+        w = next & 0xF;
+        score += abs(v - w);
+        row >>= 4;
+        next >>= 4;
+    }
+  }
+  return score;
+}
+
+int Board::CornerScore() const
+{
+  int score = CalcCornerScore();
+  Board b = *this;
+  b.ReflectHorz();
+  score = std::max(score, b.CalcCornerScore());
+  b.ReflectVert();
+  score = std::max(score, b.CalcCornerScore());
+  b.ReflectHorz();
+  score = std::max(score, b.CalcCornerScore());
+  return score;
+}
+
+int Board::CalcCornerScore() const
+{
+  int score = 0;
+  uint64_t b = *(uint64_t*)board;
+  for(int i=0; i<16; ++i) {
+    score += CornerScoreTileValue[i] * (b & 0xF);
+    b >>= 4;
+  }
+  return score;
+}
+
 int Board::CanonicalScore() const
 {
   int score = 0;
@@ -448,6 +498,12 @@ void Board::ReflectVert()
   t = board[1];
   board[1] = board[2];
   board[2] = t;
+}
+
+void Board::ReflectHorz()
+{
+  for(int i=0; i<Height; ++i)
+    board[i] = Reverse(board[i]);
 }
 
 bool Board::operator==(const Board& that) const

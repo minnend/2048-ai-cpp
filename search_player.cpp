@@ -56,7 +56,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 
 	Direction dirs[4];
 	byte avail[16];
-	const int MaxMoveDepth = 4;
+	const int MaxMoveDepth = 3;
 	for(int iMove=0; iMove < MaxMoveDepth; ++iMove) {
 		moveNodes.clear();
 		for(int iNode=0; iNode<tileNodes.size(); ++iNode) {
@@ -90,18 +90,12 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 			random_tile_info[1].second = 0.1f / nAvail;
 			for(int i=0; i<nAvail; ++i){
 				for(int j=0; j<random_tile_info.size(); ++j){
-					Board b = node->board;
-					b.SetCell(avail[i], random_tile_info[j].first);
-					TileNodeWrapperMap::iterator it = node->kids.find(b);
-					if (it == node->kids.end()) {
-						TileNode *kid = TileNode::New();
-						kid->board = b;
-						node->kids.insert(std::make_pair<Board,TileNodeWrapper>(
-							b, TileNodeWrapper(random_tile_info[j].second, kid)));
-						tileNodes.push_back(kid);
-					} else {
-						it->second.prob += random_tile_info[j].second;
-					}
+					TileNode *kid = TileNode::New();
+					kid->board = node->board;
+					kid->board.SetCell(avail[i], random_tile_info[j].first);
+					node->kids.insert(std::make_pair<Board,TileNodeWrapper>(
+						kid->board, TileNodeWrapper(random_tile_info[j].second, kid)));
+					tileNodes.push_back(kid);
 				}
 			}
 		}
@@ -172,6 +166,8 @@ float SearchPlayer::Eval(const Board& board) const
 	float a = log(board.score);
 	float b = board.MaxTile();
 	float c = board.NumAvailableTiles();
+	float d = board.SmoothnessScore();
+	float e = board.CornerScore();
 
-	return 0.2f*a + 0.3f*b + 0.5f*c;
+	return 0.3f*a + 0.2f*b + 0.3f*c + 0.2f*d + 1.0f*e;
 }

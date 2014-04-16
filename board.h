@@ -59,7 +59,10 @@ public:
 
   void RotateCW();
   void ReflectVert();
+  void ReflectHorz();
 
+  int SmoothnessScore() const;
+  int CornerScore() const;
   int CanonicalScore() const;
   Board GetCanonical() const;
 
@@ -75,6 +78,7 @@ public:
   int score;
 
 private:
+  int CalcCornerScore() const;
   static ushort moveLeftLUT[];    
   static int scoreLeftLUT[];    
 };

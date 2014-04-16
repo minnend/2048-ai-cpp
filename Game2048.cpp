@@ -235,17 +235,17 @@ void PlayGame(Player* player)
   int nMoves = 0;
   while (true) {
   //for (int i = 0; i < 10; ++i) {
-    //printf("---------------------------------------\n");
-    //printf("Board:\n");
-    //board.Print();
+    printf("---------------------------------------\n");
+    printf("Board:\n");
+    board.Print();
     Direction move = player->FindBestMove(board);
     if (move == None) break;
-    //printf("Move: %s\n", DirName[move]);
+    printf("Move: %s\n", DirName[move]);
     assert(board.CanSlide(move));
     board.Slide(move);
     ++nMoves;
-    //board.Print();
-    //printf("Score: %d\n", board.Score());
+    board.Print();
+    printf("Score: %d\n", board.Score());
     board.AddRandomTile();
     if (board.IsDead()) break;
     //getchar();
