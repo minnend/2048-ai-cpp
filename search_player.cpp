@@ -60,7 +60,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 	Direction dirs[4];
 	byte avail[16];
 	const int MaxMoveDepth = 99;
-	const int MaxMS = 30;
+	const int MaxMS = 20;
 	int moveDepth = 0;
 	for(int iMove=0; iMove < MaxMoveDepth; ++iMove) {
 		moveNodes.clear();
@@ -204,7 +204,7 @@ float SearchPlayer::Eval(const Board& board, bool bPrint) const
 	float b = board.MaxTile();
 	float c = board.NumAvailableTiles();
 	float d = board.SmoothnessScore();
-	float e = board.CornerScore() / 100.0f;
+	float e = log(board.CornerScore() / 10.0f + 1.0f);
 
 	if (bPrint)
 		printf("Eval: %.3f, %.0f, %.0f, %.0f, %.3f\n", a,b,c,d,e);

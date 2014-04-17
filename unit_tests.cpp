@@ -141,6 +141,23 @@ void RunUnitTests()
   b1.SetRow(2,0,0,2,0);
   assert(b1.SmoothnessScore() == 4);
 
+  // Test Corner Score
+  /*b1.Reset();
+  b1.SetRow(0,1,0,1,0);
+  b1.SetRow(1,0,1,0,1);
+  assert(b1.CornerScore() == 200);
+  b1.RotateCW();
+  assert(b1.CornerScore() == 200);
+  b1.RotateCW();
+  assert(b1.CornerScore() == 200);
+  b1.RotateCW();
+  assert(b1.CornerScore() == 200);
+  b1.ReflectVert();
+  assert(b1.CornerScore() == 200);
+  b1.ReflectHorz();
+  assert(b1.CornerScore() == 200);
+  */
+
   // Test SlideUp
   b1.Reset();
   b1.SetCol(0, 2, 2, 1, 1);

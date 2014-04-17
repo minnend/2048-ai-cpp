@@ -14,14 +14,24 @@
 // Global Declarations
 
 static const int CornerScoreTileValue[16] = {
+/*  100, 70, 50, 40,
+   50, 10,  5, 30,
+   40,  5,  0, 20,
+   30, 20, 10, 10
+};*/
+   /*
+  65, 55, 45, 35,
+  53, 43, 33, 23,
+  41, 31, 21, 11,
+  30, 20, 10,  1
+};*/
 
   100, 49, 24, 11,
     6,  7,  8, 10,
     5,  4,  3,  2,
     0,  1,  1,  1
 };
-/*
-  100, 70, 50, 20,
+  /*100, 70, 50, 20,
    60, 40, 20, 10,
    30, 20, 10,  5,
    20, 10,  5,  1
@@ -323,7 +333,7 @@ int Board::CalcCornerScore() const
   int score = 0;
   uint64_t b = *(uint64_t*)board;
   for(int i=0; i<16; ++i) {
-    score += CornerScoreTileValue[i] * (b & 0xF);
+    score += CornerScoreTileValue[i] * (1 << (b & 0xF));
     b >>= 4;
   }
   return score;

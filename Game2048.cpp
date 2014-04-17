@@ -46,21 +46,24 @@ Board NewGame()
 void PlayGame(Player* player)
 {
   Board board = NewGame();
+  //Board board;
+  //board.SetRow(3, 5,7,9,12);
+
   clock_t start = clock();
   int nMoves = 0;
   while (true) {
   //for (int i = 0; i < 10; ++i) {
-    printf("---------------------------------------\n");
-    printf("Board:\n");
-    board.Print();
+    //printf("---------------------------------------\n");
+    //printf("Board:\n");
+    //board.Print();
     Direction move = player->FindBestMove(board);
     if (move == None) break;
-    printf("Move: %s\n", DirName[move]);
+    //printf("Move: %s\n", DirName[move]);
     assert(board.CanSlide(move));
     board.Slide(move);
     ++nMoves;
     board.Print();
-    printf("Score: %d\n", board.Score());
+    printf("Score: %d, %d  (%d)\n", 1 << board.MaxTile(), board.Score(), nMoves);
     board.AddRandomTile();
     if (board.IsDead()) break;
     //getchar();
@@ -80,7 +83,7 @@ int main(int argc, char* argv[])
   RunUnitTests();
   //TimeMoveSpeed();
   std::unique_ptr<Player> player(new SearchPlayer());
-  //PlayGame(player.get());
+  PlayGame(player.get());
 
   //printf("Press any key to continue...");
   //getchar();
