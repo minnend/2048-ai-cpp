@@ -17,13 +17,14 @@ typedef std::unordered_map<Board, TileNodeWrapper> TileNodeWrapperMap;
 class SearchNode
 {
 protected:
-	SearchNode() : score(0.0f), accumed(false) {}
+	SearchNode() : score(0.0f), probDeath(0.0f), accumed(false) {}
 
 public:
 	static void DeleteAllNodes();
 
 	Board board;
 	float score;
+	float probDeath;
 	bool accumed;
 
 	static std::vector<SearchNode*> all;
@@ -66,7 +67,7 @@ class SearchPlayer : public Player
 
 	void AccumInfo(MoveNode *node) const;
 	void AccumInfo(TileNode *node) const;
-	float Eval(const Board& board) const;
+	float Eval(const Board& board, bool bPrint = false) const;
 };
 
 #endif

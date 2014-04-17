@@ -1,6 +1,8 @@
 #include <assert.h>
 #include "search_player.h"
 
+static const double CPMS = CLOCKS_PER_SEC / 1000.0;
+
 std::vector<SearchNode*> SearchNode::all;
 
 void SearchNode::DeleteAllNodes()
@@ -43,6 +45,7 @@ bool TileNode::IsDupBoard(const Board& b) const
 
 Direction SearchPlayer::FindBestMove(const Board& board)
 {
+	clock_t start = clock();
 	MoveNodeMap moveNodes;
 	std::vector<TileNode*> tileNodes;
 
@@ -56,7 +59,9 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 
 	Direction dirs[4];
 	byte avail[16];
-	const int MaxMoveDepth = 3;
+	const int MaxMoveDepth = 99;
+	const int MaxMS = 30;
+	int moveDepth = 0;
 	for(int iMove=0; iMove < MaxMoveDepth; ++iMove) {
 		moveNodes.clear();
 		for(int iNode=0; iNode<tileNodes.size(); ++iNode) {
@@ -80,6 +85,8 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 				}
 			}
 		}
+		++moveDepth;
+		if ((clock() - start)/CPMS >= MaxMS) break;
 
 		//printf("Move: %d  MoveNodes: %lu\n", iMove+1, moveNodes.size());
 		tileNodes.clear();
@@ -100,24 +107,35 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 			}
 		}
 		//printf("Move: %d  TileNodes: %lu\n", iMove+1, tileNodes.size());
+		if ((clock() - start)/CPMS >= MaxMS) break;
 	}
 
 	AccumInfo(root);
 
 	Direction bestDir = None;
-	float bestScore = 0.0f;
+	float bestScore = -std::numeric_limits<float>::infinity();
+	float bestDeath = std::numeric_limits<float>::infinity();
 	for(int i=0; i<NumDirections; ++i){
 		MoveNode* kid = root->kids[i];
 		if (kid == nullptr) continue;
-		//printf("%s: %.3f\n", DirName[i], kid->score);
-		if (kid->score > bestScore){
-			bestDir = (Direction)i;
+		//printf("%s: %.1f  %.1f\n", DirName[i], kid->score, kid->probDeath*100.0f);
+	  float deathDiff = kid->probDeath - bestDeath;
+		if (deathDiff <= -0.01
+			|| (fabs(deathDiff) < 0.01 && kid->score > bestScore)) {
 			bestScore = kid->score;
+			bestDeath = kid->probDeath;
+			bestDir = (Direction)i;
 		}
 	}
-
-	printf("Nodes: %lu\n", SearchNode::all.size());
+	
+	printf("Nodes: %lu    move depth: %d\n", SearchNode::all.size(), moveDepth);
 	SearchNode::DeleteAllNodes();
+
+	if (bestDir != None){
+		Board b = board;
+		b.Slide(bestDir);
+		Eval(b, true);
+	}
 
 	return bestDir;
 }
@@ -125,49 +143,71 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 void SearchPlayer::AccumInfo(MoveNode *node) const
 {
 	if (node->accumed) return;
+
 	if (node->kids.empty()){
 		node->score = Eval(node->board);
+		assert(!node->board.IsDead());
+		assert(node->probDeath == 0.0f);
 	} else {
-		node->score = 0.0f;
+		assert(node->score == 0.0f);
 		float wsum = 0.0f;
 		for(std::unordered_map<Board,TileNodeWrapper>::iterator x = node->kids.begin();
 			x != node->kids.end(); ++x) {
-			AccumInfo(x->second.node);
-			wsum += x->second.prob;
-			node->score += x->second.prob * x->second.node->score;
+			const TileNodeWrapper &wrapper = x->second;
+			AccumInfo(wrapper.node);
+			wsum += wrapper.prob;
+			node->score += wrapper.prob * wrapper.node->score;
+			node->probDeath += wrapper.prob * wrapper.node->probDeath;
 		}
 		node->score /= wsum;
+		node->probDeath /= wsum;
 	}
+
 	node->accumed = true;
 }
 
 void SearchPlayer::AccumInfo(TileNode *node) const
 {
 	if (node->accumed) return;
-	
+
 	int nKids = 0;
 	node->score = -std::numeric_limits<float>::infinity();
+	node->probDeath = std::numeric_limits<float>::infinity();
 	for(int i=0; i<NumDirections; ++i){
 		MoveNode* kid = node->kids[i];
 		if (kid == nullptr) continue;
 
 		++nKids;
 		AccumInfo(kid);
-		if (kid->score > node->score)
+		float deathDiff = kid->probDeath - node->probDeath;
+		if (deathDiff <= -0.01
+			|| (fabs(deathDiff) < 0.01 && kid->score > node->score)) {
 			node->score = kid->score;
+			node->probDeath = kid->probDeath;
+		}
 	}
-	if (nKids == 0)
+
+	if (nKids == 0) {
 		node->score = Eval(node->board);
+		node->probDeath = (node->board.IsDead() ? 1.0f : 0.0f);
+	}
+
+	assert(!isnan(node->score));
+	assert(!isnan(node->probDeath));
+
 	node->accumed = true;
 }
 
-float SearchPlayer::Eval(const Board& board) const
+float SearchPlayer::Eval(const Board& board, bool bPrint) const
 {
 	float a = log(board.score);
 	float b = board.MaxTile();
 	float c = board.NumAvailableTiles();
 	float d = board.SmoothnessScore();
-	float e = board.CornerScore();
+	float e = board.CornerScore() / 100.0f;
 
-	return 0.3f*a + 0.2f*b + 0.3f*c + 0.2f*d + 1.0f*e;
+	if (bPrint)
+		printf("Eval: %.3f, %.0f, %.0f, %.0f, %.3f\n", a,b,c,d,e);
+
+	return 0.2f*a + 0.3f*b + 0.3f*c - 0.3f*d + 0.5f*e;
 }

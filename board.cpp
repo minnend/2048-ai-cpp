@@ -14,11 +14,18 @@
 // Global Declarations
 
 static const int CornerScoreTileValue[16] = {
-  64, 32, 16, 8,
-  32, 16,  8, 4,
-  16,  8,  4, 2,
-   8,  4,  2, 1
+
+  100, 49, 24, 11,
+    6,  7,  8, 10,
+    5,  4,  3,  2,
+    0,  1,  1,  1
 };
+/*
+  100, 70, 50, 20,
+   60, 40, 20, 10,
+   30, 20, 10,  5,
+   20, 10,  5,  1
+ };*/
 
 std::vector<const char*> DirName;
 
@@ -262,10 +269,12 @@ int Board::SmoothnessScore() const
     ushort next = board[y+1];
     for(int x=0; x<3; ++x){
         int v = row & 0xF;
-        int w = (row >> 4) & 0xF;
-        score += abs(v - w);
-        w = next & 0xF;
-        score += abs(v - w);
+        if (v > 0) {
+          int w = (row >> 4) & 0xF;
+          if (w > 0) score += abs(v - w);
+          w = next & 0xF;
+          if (w > 0) score += abs(v - w);
+        }
         row >>= 4;
         next >>= 4;
     }
@@ -283,6 +292,17 @@ int Board::CornerScore() const
   score = std::max(score, b.CalcCornerScore());
   b.ReflectHorz();
   score = std::max(score, b.CalcCornerScore());
+
+  b = *this;
+  b.RotateCW();
+  score = std::max(score, b.CalcCornerScore());
+  b.ReflectHorz();
+  score = std::max(score, b.CalcCornerScore());
+  b.ReflectVert();
+  score = std::max(score, b.CalcCornerScore());
+  b.ReflectHorz();
+  score = std::max(score, b.CalcCornerScore());
+
   return score;
 }
 

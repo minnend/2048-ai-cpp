@@ -9,7 +9,7 @@
 #include "random_player.h"
 #include "search_player.h"
 
-static double CPMS = CLOCKS_PER_SEC / 1000.0;
+static const double CPMS = CLOCKS_PER_SEC / 1000.0;
 
 void Test()
 {  
