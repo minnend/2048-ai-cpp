@@ -264,15 +264,27 @@ void Board::Reset()
 int Board::SmoothnessScore() const
 {
   int score = 0;
+  for(int y=0; y<Height; ++y){
+    ushort row = board[y];
+    int a = row & 0xF;
+    int b = (row >> 4) & 0xF;
+    int c = (row >> 8) & 0xF;
+    int d = row >> 12;
+    assert(a>=0 && b>=0 && c>=0 && d>=0);
+    if (b > 0){
+      if (a > 0) score += abs(a-b);
+      if (c > 0) score += abs(c-b);
+    }
+    if (c>0 && d>0) score += abs(c-d);
+  }
+
   for(int y=0; y<3; ++y){
     ushort row = board[y];
     ushort next = board[y+1];
-    for(int x=0; x<3; ++x){
+    for(int x=0; x<4; ++x){
         int v = row & 0xF;
         if (v > 0) {
-          int w = (row >> 4) & 0xF;
-          if (w > 0) score += abs(v - w);
-          w = next & 0xF;
+          int w = next & 0xF;
           if (w > 0) score += abs(v - w);
         }
         row >>= 4;

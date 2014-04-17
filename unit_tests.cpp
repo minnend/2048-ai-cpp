@@ -128,6 +128,19 @@ void RunUnitTests()
   b2.SetCol(0,4,3,2,1);
   assert(b1.GetCanonical() == b2.GetCanonical());
 
+  // Test SmoothnessScore
+  b1.Reset();
+  b1.SetRow(0,1,1,2,2);
+  assert(b1.SmoothnessScore() == 1);
+  b1.SetRow(1,1,1,2,2);
+  assert(b1.SmoothnessScore() == 2);
+  b1.SetRow(2,1,2,3,4);
+  assert(b1.SmoothnessScore() == 9);
+  b1.SetRow(3,7,5,0,3);
+  assert(b1.SmoothnessScore() == 21);
+  b1.SetRow(2,0,0,2,0);
+  assert(b1.SmoothnessScore() == 4);
+
   // Test SlideUp
   b1.Reset();
   b1.SetCol(0, 2, 2, 1, 1);
