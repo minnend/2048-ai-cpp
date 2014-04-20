@@ -18,6 +18,7 @@ class SearchNode
 {
 protected:
 	SearchNode() : score(0.0f), probDeath(0.0f), accumed(false) {}
+  virtual ~SearchNode(){}
 
 public:
 	static void DeleteAllNodes();
