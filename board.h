@@ -27,6 +27,7 @@ public:
 
   void Reset();
   void Print() const;
+  void PrintSmall() const;
 
   void SetRow(int iRow, int a, int b, int c, int d);
   void SetCol(int iCol, int a, int b, int c, int d);
@@ -84,6 +85,7 @@ public:
 
 private:
   int CalcCornerScore() const;
+
   static ushort moveLeftLUT[];    
   static int scoreLeftLUT[];    
 };

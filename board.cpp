@@ -399,6 +399,12 @@ void Board::Print() const
   }
 }
 
+void Board::PrintSmall() const
+{
+  for(int y=0; y<Height; ++y)
+    printf("%04x\n", Reverse(board[y]));
+}
+
 bool Board::IsDead() const
 {
   if (NumAvailableTiles() > 0) return false;
