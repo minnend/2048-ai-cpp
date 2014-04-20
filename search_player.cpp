@@ -61,7 +61,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 	Direction dirs[4];
 	byte avail[16];
 	const int MaxMoveDepth = 99;
-	const int MaxMS = 20;
+	const int MaxMS = 30;
 	int moveDepth = 0;
 	for(int iMove=0; iMove < MaxMoveDepth; ++iMove) {
 		moveNodes.clear();
@@ -101,8 +101,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 					TileNode *kid = TileNode::New();
 					kid->board = node->board;
 					kid->board.SetCell(avail[i], random_tile_info[j].first);
-					node->kids.insert(std::make_pair<Board,TileNodeWrapper>(
-						kid->board, TileNodeWrapper(random_tile_info[j].second, kid)));
+          node->kids.push_back(TileNodeWrapper(random_tile_info[j].second, kid));
 					tileNodes.push_back(kid);
 				}
 			}
@@ -152,9 +151,8 @@ void SearchPlayer::AccumInfo(MoveNode *node) const
 	} else {
 		assert(node->score == 0.0f);
 		float wsum = 0.0f;
-		for(std::unordered_map<Board,TileNodeWrapper>::iterator x = node->kids.begin();
-			x != node->kids.end(); ++x) {
-			const TileNodeWrapper &wrapper = x->second;
+    for(unsigned int i=0; i<node->kids.size(); ++i){
+			const TileNodeWrapper &wrapper = node->kids[i];
 			AccumInfo(wrapper.node);
 			wsum += wrapper.prob;
 			node->score += wrapper.prob * wrapper.node->score;

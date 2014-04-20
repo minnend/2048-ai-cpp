@@ -37,7 +37,8 @@ class MoveNode : public SearchNode
 {
 public:
 	static MoveNode* New();
-	std::unordered_map<Board, TileNodeWrapper> kids;
+
+  std::vector<TileNodeWrapper> kids;
 };
 
 // Board state that results from adding a random tile.

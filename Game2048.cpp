@@ -64,7 +64,7 @@ void PlayGame(Player* player)
     assert(board.CanSlide(move));
     board.Slide(move);
     ++nMoves;
-    board.PrintSmall();
+    board.Print();
     printf("Score: %d, %d  (%d)\n", 1 << board.MaxTile(), board.Score(), nMoves);
     board.AddRandomTile(rng);
     if (board.IsDead()) break;
