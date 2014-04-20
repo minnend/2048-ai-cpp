@@ -83,7 +83,7 @@ bool Board::SlideLeftSlow(ushort* row, int* score)
 {
   byte b[4];
   for(int i=0; i<4; ++i)
-    b[i] = RowVal(*row, i);
+    b[i] = (byte)RowVal(*row, i);
   if (!SlideLeftSlow(b, score)) return false;
   *row = b[0] | (b[1] << 4) | (b[2] << 8) | (b[3] << 12);
   return true;
@@ -248,7 +248,7 @@ int Board::GetLegalMoves(Direction* moves) const
   return n;
 }
 
-bool Board::AddRandomTile()
+bool Board::AddRandomTile(RNG& rng)
 {
   byte list[16];
   int n = GetAvailableTiles(list);
@@ -259,8 +259,8 @@ bool Board::AddRandomTile()
     assert(RowVal(board[ix/4], ix&3) == 0);
   }
 #endif
-  int ix = list[rand_uint() % n];
-  int v = (rand_float() < 0.9 ? 1 : 2);
+  int ix = list[rng.NextInt() % n];
+  int v = (rng.NextFloat() < 0.9 ? 1 : 2);
   SetCell(ix, v);
   return true;
 }

@@ -35,17 +35,19 @@ void TimeMoveSpeed()
   printf("Time: %0.1fms\n", (stop-start)/CPMS);
 }
 
-Board NewGame()
+Board NewGame(RNG& rng)
 {
   Board b;
-  b.AddRandomTile();
-  b.AddRandomTile();
+  b.AddRandomTile(rng);
+  b.AddRandomTile(rng);
   return b;
 }
 
 void PlayGame(Player* player)
 {
-  Board board = NewGame();
+  RNG rng(1234); // TODO
+
+  Board board = NewGame(rng);
   //Board board;
   //board.SetRow(3, 5,7,9,12);
 
@@ -64,7 +66,7 @@ void PlayGame(Player* player)
     ++nMoves;
     board.Print();
     printf("Score: %d, %d  (%d)\n", 1 << board.MaxTile(), board.Score(), nMoves);
-    board.AddRandomTile();
+    board.AddRandomTile(rng);
     if (board.IsDead()) break;
     //getchar();
   }
@@ -78,14 +80,13 @@ void PlayGame(Player* player)
 int main(int argc, char* argv[])
 {
   Board::Init();
-  srand_sse(1234); // TODO
 
   RunUnitTests();
-  //TimeMoveSpeed();
+  TimeMoveSpeed();
   std::unique_ptr<Player> player(new SearchPlayer());
   PlayGame(player.get());
 
-  //printf("Press any key to continue...");
-  //getchar();
+  printf("Press any key to continue...");
+  getchar();
   return EXIT_SUCCESS;
 }

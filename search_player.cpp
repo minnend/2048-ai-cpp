@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <time.h>
 #include "search_player.h"
 
 static const double CPMS = CLOCKS_PER_SEC / 1000.0;
@@ -45,7 +46,7 @@ bool TileNode::IsDupBoard(const Board& b) const
 
 Direction SearchPlayer::FindBestMove(const Board& board)
 {
-	clock_t start = clock();
+	clock_t start = clock();  
 	MoveNodeMap moveNodes;
 	std::vector<TileNode*> tileNodes;
 
@@ -64,7 +65,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 	int moveDepth = 0;
 	for(int iMove=0; iMove < MaxMoveDepth; ++iMove) {
 		moveNodes.clear();
-		for(int iNode=0; iNode<tileNodes.size(); ++iNode) {
+		for(unsigned int iNode=0; iNode<tileNodes.size(); ++iNode) {
 			TileNode* node = tileNodes[iNode];
 			int nDirs = node->board.GetLegalMoves(dirs);
 			for(int i=0; i<nDirs; ++i){
@@ -86,7 +87,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 			}
 		}
 		++moveDepth;
-		if ((clock() - start)/CPMS >= MaxMS) break;
+		if ((clock() - start)/CPMS >= MaxMS) break;    
 
 		//printf("Move: %d  MoveNodes: %lu\n", iMove+1, moveNodes.size());
 		tileNodes.clear();
@@ -96,7 +97,7 @@ Direction SearchPlayer::FindBestMove(const Board& board)
 			random_tile_info[0].second = 0.9f / nAvail;
 			random_tile_info[1].second = 0.1f / nAvail;
 			for(int i=0; i<nAvail; ++i){
-				for(int j=0; j<random_tile_info.size(); ++j){
+				for(unsigned int j=0; j<random_tile_info.size(); ++j){
 					TileNode *kid = TileNode::New();
 					kid->board = node->board;
 					kid->board.SetCell(avail[i], random_tile_info[j].first);
@@ -192,18 +193,15 @@ void SearchPlayer::AccumInfo(TileNode *node) const
 		node->probDeath = (node->board.IsDead() ? 1.0f : 0.0f);
 	}
 
-	assert(!isnan(node->score));
-	assert(!isnan(node->probDeath));
-
 	node->accumed = true;
 }
 
 float SearchPlayer::Eval(const Board& board, bool bPrint) const
 {
-	float a = log(board.score);
-	float b = board.MaxTile();
-	float c = board.NumAvailableTiles();
-	float d = board.SmoothnessScore();
+	float a = log((float)board.score);
+	float b = (float)board.MaxTile();
+	float c = (float)board.NumAvailableTiles();
+	float d = (float)board.SmoothnessScore();
 	float e = log(board.CornerScore() / 10.0f + 1.0f);
 
 	if (bPrint)

@@ -2,6 +2,11 @@
 #define __BOARD_H__
 
 #include <vector>
+#include "rng.h"
+
+#ifdef WIN32
+typedef unsigned long long uint64_t;
+#endif
 
 enum Direction { None=-1, Left=0, Right, Up, Down, NumDirections };
 
@@ -36,7 +41,7 @@ public:
   int NumAvailableTiles() const;
   int GetAvailableTiles(byte* list) const;
   int GetLegalMoves(Direction* moves) const;
-  bool AddRandomTile();
+  bool AddRandomTile(RNG& rng);
 
   bool IsDead() const;
   bool CanSlide(Direction dir) const;
